@@ -23,9 +23,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
         outline: "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        ghost: "hover:bg-accent/60 hover:text-accent-foreground",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
@@ -41,11 +41,19 @@ function Button({ className, variant, size, ...props }) {
 }
 
 function Card({ className, ...props }) {
-  return <div className={cn("bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm", className)} {...props} />;
+  return (
+    <div
+      className={cn(
+        "bg-card text-card-foreground flex flex-col gap-3 rounded-2xl border border-border/60 py-4 shadow-[0_1px_6px_0_rgba(0,0,0,0.06)]",
+        className
+      )}
+      {...props}
+    />
+  );
 }
 
 function CardHeader({ className, ...props }) {
-  return <div className={cn("grid auto-rows-min gap-1.5 px-6", className)} {...props} />;
+  return <div className={cn("grid auto-rows-min gap-0.5 px-5", className)} {...props} />;
 }
 
 function CardTitle({ className, ...props }) {
@@ -57,11 +65,16 @@ function CardDescription({ className, ...props }) {
 }
 
 function CardContent({ className, ...props }) {
-  return <div className={cn("px-6", className)} {...props} />;
+  return <div className={cn("px-5", className)} {...props} />;
 }
 
 function Avatar({ className, ...props }) {
-  return <AvatarPrimitive.Root className={cn("relative flex size-8 shrink-0 overflow-hidden rounded-full", className)} {...props} />;
+  return (
+    <AvatarPrimitive.Root
+      className={cn("relative flex size-8 shrink-0 overflow-hidden rounded-full", className)}
+      {...props}
+    />
+  );
 }
 
 function AvatarImage({ className, ...props }) {
@@ -69,18 +82,23 @@ function AvatarImage({ className, ...props }) {
 }
 
 function AvatarFallback({ className, ...props }) {
-  return <AvatarPrimitive.Fallback className={cn("bg-muted flex size-full items-center justify-center rounded-full", className)} {...props} />;
+  return (
+    <AvatarPrimitive.Fallback
+      className={cn("bg-muted flex size-full items-center justify-center rounded-full", className)}
+      {...props}
+    />
+  );
 }
 
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 overflow-hidden",
+  "inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 overflow-hidden",
   {
     variants: {
       variant: {
         default: "border-transparent bg-primary text-primary-foreground",
         secondary: "border-transparent bg-secondary text-secondary-foreground",
         destructive: "border-transparent bg-destructive text-white",
-        outline: "text-foreground",
+        outline: "text-foreground border-border",
       },
     },
     defaultVariants: { variant: "default" },
@@ -89,6 +107,30 @@ const badgeVariants = cva(
 
 function Badge({ className, variant, ...props }) {
   return <span className={cn(badgeVariants({ variant }), className)} {...props} />;
+}
+
+/* ── Thin stat card ── */
+function StatCard({ stat }) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card px-3.5 py-2.5 shadow-[0_1px_4px_0_rgba(0,0,0,0.05)]">
+      <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg", stat.bgColor)}>
+        <stat.icon className={cn("h-4 w-4", stat.color)} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-lg font-bold leading-none text-foreground">{stat.value}</p>
+        <p className="mt-0.5 truncate text-xs text-muted-foreground">{stat.label}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ── List row used in detail cards ── */
+function ListRow({ children }) {
+  return (
+    <div className="flex items-center justify-between rounded-xl bg-muted/40 px-3 py-2.5">
+      {children}
+    </div>
+  );
 }
 
 export default function DashboardPage() {
@@ -106,194 +148,166 @@ export default function DashboardPage() {
   const highSeverityAllergies = petAllergies.filter((a) => a.severityLevel === "High");
 
   const stats = [
-    {
-      label: "Vaccinations",
-      value: petVaccinations.length,
-      icon: Syringe,
-      color: "text-primary",
-      bgColor: "bg-primary/10",
-    },
-    {
-      label: "Active Meds",
-      value: activeMedications.length,
-      icon: Pill,
-      color: "text-chart-2",
-      bgColor: "bg-chart-2/10",
-    },
-    {
-      label: "Allergies",
-      value: petAllergies.length,
-      icon: AlertTriangle,
-      color: "text-destructive",
-      bgColor: "bg-destructive/10",
-    },
-    {
-      label: "Reminders",
-      value: petReminders.length,
-      icon: Bell,
-      color: "text-chart-3",
-      bgColor: "bg-chart-3/10",
-    },
+    { label: "Vaccinations", value: petVaccinations.length, icon: Syringe,       color: "text-primary",     bgColor: "bg-primary/10" },
+    { label: "Active Meds",  value: activeMedications.length, icon: Pill,         color: "text-chart-2",     bgColor: "bg-chart-2/10" },
+    { label: "Allergies",    value: petAllergies.length,       icon: AlertTriangle, color: "text-destructive", bgColor: "bg-destructive/10" },
+    { label: "Reminders",    value: petReminders.length,       icon: Bell,         color: "text-chart-3",     bgColor: "bg-chart-3/10" },
   ];
 
   return (
     <AppLayout>
-      <div className="space-y-6">
-        {/* Welcome Section */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="space-y-5">
+
+        {/* ── Welcome ── */}
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            <h1 className="font-display text-2xl font-bold text-foreground md:text-3xl">
               Welcome back!
             </h1>
-            <p className="text-muted-foreground">
+            <p className="mt-0.5 text-sm text-muted-foreground">
               Here&apos;s an overview of {selectedPet?.name}&apos;s health records
             </p>
           </div>
           <Link href="/pets">
             <Button>
-              <PawPrint className="h-4 w-4 mr-2" />
+              <PawPrint className="h-4 w-4" />
               Manage Pets
             </Button>
           </Link>
         </div>
 
-        {/* Pet Quick View */}
-        <Card className="border-border">
-          <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
-              <Avatar className="h-24 w-24 border-4 border-primary/20">
+        {/* ── Pet Quick View ── */}
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+              <Avatar className="h-[88px] w-[88px] ring-4 ring-primary/15">
                 <AvatarImage src={selectedPet?.photo} alt={selectedPet?.name} />
                 <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
                   {selectedPet?.name?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
+
               <div className="flex-1 text-center sm:text-left">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                  <h2 className="text-2xl font-bold text-foreground">{selectedPet?.name}</h2>
+                <div className="mb-1 flex flex-col items-center gap-2 sm:flex-row sm:items-center">
+                  <h2 className="font-display text-2xl font-bold text-foreground">{selectedPet?.name}</h2>
                   <Badge variant="secondary">{selectedPet?.species}</Badge>
                 </div>
-                <p className="text-muted-foreground mb-3">{selectedPet?.breed}</p>
-                <div className="flex flex-wrap justify-center sm:justify-start gap-4 text-sm">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-foreground">{calculateAge(selectedPet?.birthDate)}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-foreground">{selectedPet?.weight} {selectedPet?.weightUnit}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Heart className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-foreground">{selectedPet?.gender}</span>
-                  </div>
+                <p className="mb-3 text-sm text-muted-foreground">{selectedPet?.breed}</p>
+
+                <div className="flex flex-wrap justify-center gap-4 text-sm sm:justify-start">
+                  <span className="flex items-center gap-1.5 text-foreground">
+                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                    {calculateAge(selectedPet?.birthDate)}
+                  </span>
+                  <span className="flex items-center gap-1.5 text-foreground">
+                    <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+                    {selectedPet?.weight} {selectedPet?.weightUnit}
+                  </span>
+                  <span className="flex items-center gap-1.5 text-foreground">
+                    <Heart className="h-3.5 w-3.5 text-muted-foreground" />
+                    {selectedPet?.gender}
+                  </span>
                 </div>
               </div>
+
               <Link href={`/pets/${selectedPet?.id}`}>
-                <Button variant="outline">
+                <Button variant="outline" size="sm">
                   View Profile
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
               </Link>
             </div>
           </CardContent>
         </Card>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* ── Stats Grid (thin cards) ── */}
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           {stats.map((stat) => (
-            <Card key={stat.label} className="border-border">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2.5 rounded-lg ${stat.bgColor}`}>
-                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                    <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <StatCard key={stat.label} stat={stat} />
           ))}
         </div>
 
-        {/* Alerts Section */}
+        {/* ── Alerts ── */}
         {(overdueVaccinations.length > 0 || highSeverityAllergies.length > 0) && (
-          <Card className="border-destructive/50 bg-destructive/5">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2 text-destructive">
-                <AlertTriangle className="h-5 w-5" />
-                Attention Required
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
+          <div className="rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-4 space-y-3">
+            <p className="flex items-center gap-2 text-sm font-semibold text-destructive">
+              <AlertTriangle className="h-4 w-4" />
+              Attention Required
+            </p>
+
+            <div className="space-y-2">
               {overdueVaccinations.map((vac) => (
-                <div key={vac.id} className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                <div key={vac.id} className="flex items-center justify-between rounded-xl border border-border/60 bg-card px-3.5 py-2.5">
                   <div className="flex items-center gap-3">
-                    <Syringe className="h-5 w-5 text-destructive" />
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-destructive/10">
+                      <Syringe className="h-3.5 w-3.5 text-destructive" />
+                    </div>
                     <div>
-                      <p className="font-medium text-foreground">{vac.vaccineType} - Overdue</p>
-                      <p className="text-sm text-muted-foreground">Expired {formatDate(vac.expiryDate)}</p>
+                      <p className="text-sm font-medium text-foreground">{vac.vaccineType} — Overdue</p>
+                      <p className="text-xs text-muted-foreground">Expired {formatDate(vac.expiryDate)}</p>
                     </div>
                   </div>
                   <Badge variant="destructive">Overdue</Badge>
                 </div>
               ))}
+
               {highSeverityAllergies.map((allergy) => (
-                <div key={allergy.id} className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
+                <div key={allergy.id} className="flex items-center justify-between rounded-xl border border-border/60 bg-card px-3.5 py-2.5">
                   <div className="flex items-center gap-3">
-                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-destructive/10">
+                      <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+                    </div>
                     <div>
-                      <p className="font-medium text-foreground">Severe Allergy: {allergy.allergen}</p>
-                      <p className="text-sm text-muted-foreground">{allergy.emergencyResponse}</p>
+                      <p className="text-sm font-medium text-foreground">Severe Allergy: {allergy.allergen}</p>
+                      <p className="text-xs text-muted-foreground">{allergy.emergencyResponse}</p>
                     </div>
                   </div>
                   <Badge variant="destructive">High Risk</Badge>
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-2 gap-6">
+        {/* ── Main Content Grid ── */}
+        <div className="grid gap-4 lg:grid-cols-2">
+
           {/* Upcoming Vaccinations */}
-          <Card className="border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-1">
               <div>
-                <CardTitle className="text-lg">Upcoming Vaccinations</CardTitle>
-                <CardDescription>Due in the next 60 days</CardDescription>
+                <CardTitle className="text-base">Upcoming Vaccinations</CardTitle>
+                <CardDescription className="text-xs">Due in the next 60 days</CardDescription>
               </div>
               <Link href="/records">
-                <Button variant="ghost" size="sm">
-                  View All
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                <Button variant="ghost" size="sm" className="text-xs">
+                  View All <ChevronRight className="h-3.5 w-3.5" />
                 </Button>
               </Link>
             </CardHeader>
             <CardContent>
               {upcomingVaccinations.length === 0 ? (
-                <div className="text-center py-6 text-muted-foreground">
-                  <Syringe className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                  <p>No upcoming vaccinations</p>
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                  <Syringe className="mb-2 h-8 w-8 opacity-30" />
+                  <p className="text-sm">No upcoming vaccinations</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {upcomingVaccinations.slice(0, 3).map((vac) => (
-                    <div key={vac.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <ListRow key={vac.id}>
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                          <Syringe className="h-4 w-4 text-primary" />
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+                          <Syringe className="h-3.5 w-3.5 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">{vac.vaccineType}</p>
-                          <p className="text-sm text-muted-foreground">Due {formatDate(vac.expiryDate)}</p>
+                          <p className="text-sm font-medium text-foreground">{vac.vaccineType}</p>
+                          <p className="text-xs text-muted-foreground">Due {formatDate(vac.expiryDate)}</p>
                         </div>
                       </div>
-                      <Badge variant="outline" className="text-chart-2 border-chart-2">
+                      <Badge variant="outline" className="text-chart-2 border-chart-2/50 text-xs">
                         Upcoming
                       </Badge>
-                    </div>
+                    </ListRow>
                   ))}
                 </div>
               )}
@@ -301,42 +315,41 @@ export default function DashboardPage() {
           </Card>
 
           {/* Active Medications */}
-          <Card className="border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-1">
               <div>
-                <CardTitle className="text-lg">Active Medications</CardTitle>
-                <CardDescription>Current prescriptions and supplements</CardDescription>
+                <CardTitle className="text-base">Active Medications</CardTitle>
+                <CardDescription className="text-xs">Current prescriptions and supplements</CardDescription>
               </div>
               <Link href="/records">
-                <Button variant="ghost" size="sm">
-                  View All
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                <Button variant="ghost" size="sm" className="text-xs">
+                  View All <ChevronRight className="h-3.5 w-3.5" />
                 </Button>
               </Link>
             </CardHeader>
             <CardContent>
               {activeMedications.length === 0 ? (
-                <div className="text-center py-6 text-muted-foreground">
-                  <Pill className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                  <p>No active medications</p>
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                  <Pill className="mb-2 h-8 w-8 opacity-30" />
+                  <p className="text-sm">No active medications</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {activeMedications.slice(0, 3).map((med) => (
-                    <div key={med.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <ListRow key={med.id}>
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-chart-2/10 rounded-lg">
-                          <Pill className="h-4 w-4 text-chart-2" />
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-chart-2/10">
+                          <Pill className="h-3.5 w-3.5 text-chart-2" />
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">{med.medicationName}</p>
-                          <p className="text-sm text-muted-foreground">{med.dosage} - {med.frequency}</p>
+                          <p className="text-sm font-medium text-foreground">{med.medicationName}</p>
+                          <p className="text-xs text-muted-foreground">{med.dosage} · {med.frequency}</p>
                         </div>
                       </div>
-                      <Badge variant="outline" className="text-success border-success">
+                      <Badge variant="outline" className="text-success border-success/50 text-xs">
                         Active
                       </Badge>
-                    </div>
+                    </ListRow>
                   ))}
                 </div>
               )}
@@ -344,51 +357,51 @@ export default function DashboardPage() {
           </Card>
 
           {/* Pending Reminders */}
-          <Card className="border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-1">
               <div>
-                <CardTitle className="text-lg">Pending Reminders</CardTitle>
-                <CardDescription>Upcoming tasks and appointments</CardDescription>
+                <CardTitle className="text-base">Pending Reminders</CardTitle>
+                <CardDescription className="text-xs">Upcoming tasks and appointments</CardDescription>
               </div>
               <Link href="/reminders">
-                <Button variant="ghost" size="sm">
-                  View All
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                <Button variant="ghost" size="sm" className="text-xs">
+                  View All <ChevronRight className="h-3.5 w-3.5" />
                 </Button>
               </Link>
             </CardHeader>
             <CardContent>
               {petReminders.length === 0 ? (
-                <div className="text-center py-6 text-muted-foreground">
-                  <Bell className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                  <p>No pending reminders</p>
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                  <Bell className="mb-2 h-8 w-8 opacity-30" />
+                  <p className="text-sm">No pending reminders</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {petReminders.slice(0, 3).map((reminder) => (
-                    <div key={reminder.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <ListRow key={reminder.id}>
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-chart-3/10 rounded-lg">
-                          <Clock className="h-4 w-4 text-chart-3" />
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-chart-3/10">
+                          <Clock className="h-3.5 w-3.5 text-chart-3" />
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">{reminder.title}</p>
-                          <p className="text-sm text-muted-foreground">Due {formatDate(reminder.dueDate)}</p>
+                          <p className="text-sm font-medium text-foreground">{reminder.title}</p>
+                          <p className="text-xs text-muted-foreground">Due {formatDate(reminder.dueDate)}</p>
                         </div>
                       </div>
-                      <Badge 
-                        variant="outline" 
-                        className={
-                          reminder.priority === "high" 
-                            ? "text-destructive border-destructive" 
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-xs",
+                          reminder.priority === "high"
+                            ? "text-destructive border-destructive/50"
                             : reminder.priority === "medium"
-                            ? "text-chart-2 border-chart-2"
-                            : "text-muted-foreground border-muted-foreground"
-                        }
+                            ? "text-chart-2 border-chart-2/50"
+                            : "text-muted-foreground border-muted-foreground/40"
+                        )}
                       >
                         {reminder.priority}
                       </Badge>
-                    </div>
+                    </ListRow>
                   ))}
                 </div>
               )}
@@ -396,68 +409,65 @@ export default function DashboardPage() {
           </Card>
 
           {/* Known Allergies */}
-          <Card className="border-border">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-1">
               <div>
-                <CardTitle className="text-lg">Known Allergies</CardTitle>
-                <CardDescription>Food, medication, and environmental</CardDescription>
+                <CardTitle className="text-base">Known Allergies</CardTitle>
+                <CardDescription className="text-xs">Food, medication, and environmental</CardDescription>
               </div>
               <Link href="/records">
-                <Button variant="ghost" size="sm">
-                  View All
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                <Button variant="ghost" size="sm" className="text-xs">
+                  View All <ChevronRight className="h-3.5 w-3.5" />
                 </Button>
               </Link>
             </CardHeader>
             <CardContent>
               {petAllergies.length === 0 ? (
-                <div className="text-center py-6 text-muted-foreground">
-                  <AlertTriangle className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                  <p>No known allergies</p>
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                  <AlertTriangle className="mb-2 h-8 w-8 opacity-30" />
+                  <p className="text-sm">No known allergies</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {petAllergies.slice(0, 3).map((allergy) => (
-                    <div key={allergy.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <ListRow key={allergy.id}>
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${
-                          allergy.severityLevel === "High" 
-                            ? "bg-destructive/10" 
-                            : allergy.severityLevel === "Moderate"
-                            ? "bg-chart-2/10"
-                            : "bg-muted"
-                        }`}>
-                          <AlertTriangle className={`h-4 w-4 ${
-                            allergy.severityLevel === "High" 
-                              ? "text-destructive" 
-                              : allergy.severityLevel === "Moderate"
-                              ? "text-chart-2"
-                              : "text-muted-foreground"
-                          }`} />
+                        <div
+                          className={cn("flex h-7 w-7 items-center justify-center rounded-lg", {
+                            "bg-destructive/10": allergy.severityLevel === "High",
+                            "bg-chart-2/10":     allergy.severityLevel === "Moderate",
+                            "bg-muted":          allergy.severityLevel === "Low",
+                          })}
+                        >
+                          <AlertTriangle
+                            className={cn("h-3.5 w-3.5", {
+                              "text-destructive":    allergy.severityLevel === "High",
+                              "text-chart-2":        allergy.severityLevel === "Moderate",
+                              "text-muted-foreground": allergy.severityLevel === "Low",
+                            })}
+                          />
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">{allergy.allergen}</p>
-                          <p className="text-sm text-muted-foreground">{allergy.allergyType}</p>
+                          <p className="text-sm font-medium text-foreground">{allergy.allergen}</p>
+                          <p className="text-xs text-muted-foreground">{allergy.allergyType}</p>
                         </div>
                       </div>
-                      <Badge 
+                      <Badge
                         variant={allergy.severityLevel === "High" ? "destructive" : "outline"}
-                        className={
-                          allergy.severityLevel === "Moderate" 
-                            ? "text-chart-2 border-chart-2" 
-                            : allergy.severityLevel === "Low"
-                            ? "text-muted-foreground border-muted-foreground"
-                            : ""
-                        }
+                        className={cn("text-xs", {
+                          "text-chart-2 border-chart-2/50":             allergy.severityLevel === "Moderate",
+                          "text-muted-foreground border-muted-foreground/40": allergy.severityLevel === "Low",
+                        })}
                       >
                         {allergy.severityLevel}
                       </Badge>
-                    </div>
+                    </ListRow>
                   ))}
                 </div>
               )}
             </CardContent>
           </Card>
+
         </div>
       </div>
     </AppLayout>
