@@ -60,7 +60,7 @@ function ModalContent({ className, children, ...props }) {
       <ModalPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50" />
       <ModalPrimitive.Content
         className={cn(
-          "bg-background fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg",
+          "bg-background fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] rounded-lg border shadow-lg duration-200 sm:max-w-2xl",
           className
         )}
         {...props}
@@ -124,7 +124,7 @@ function SelectItem({ className, children, ...props }) {
 }
 
 const speciesOptions = ["Dog", "Cat", "Bird", "Exotic", "Rabbit", "Reptile", "Small Mammal"];
-const genderOptions = ["Male", "Female", "Neutered", "Spayed"];
+const genderOptions = ["Male", "Female"];
 const breedSuggestions = [
   "Golden Retriever",
   "Labrador Retriever",
@@ -147,8 +147,9 @@ const initialPet = {
   birthDate: "",
   weight: "",
   weightUnit: "kg",
-  microchipNumber: "",
+  neutered: false,
   distinguishingMarks: "",
+  microchipNumber: "",
   photo: "",
 };
 
@@ -169,7 +170,6 @@ export function AddPetModal({ children, nameId = "petName", speciesId = "species
   const handlePhotoChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = () => updatePet("photo", reader.result);
     reader.readAsDataURL(file);
@@ -183,7 +183,7 @@ export function AddPetModal({ children, nameId = "petName", speciesId = "species
       ...pet,
       weight: Number(pet.weight),
       photo: pet.photo || "/placeholder-user.jpg",
-      spayNeuterStatus: pet.gender === "Neutered" || pet.gender === "Spayed" ? pet.gender : "Intact",
+      spayNeuterStatus: pet.neutered ? "Neutered/Spayed" : "Intact",
     });
 
     setPet(initialPet);
@@ -193,127 +193,199 @@ export function AddPetModal({ children, nameId = "petName", speciesId = "species
   return (
     <ModalPrimitive.Root open={open} onOpenChange={setOpen}>
       <ModalPrimitive.Trigger asChild>{children}</ModalPrimitive.Trigger>
-      <ModalContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-        <div className="flex flex-col gap-2 text-center sm:text-left">
-          <ModalPrimitive.Title className="text-lg leading-none font-semibold">Add New Pet</ModalPrimitive.Title>
-          <ModalPrimitive.Description className="text-muted-foreground text-sm">
-            Enter your pet&apos;s profile details and identification information.
-          </ModalPrimitive.Description>
-        </div>
-        <form className="space-y-5 py-4" onSubmit={handleSubmit}>
-          <div className="grid gap-4 sm:grid-cols-[7rem_1fr]">
-            <div className="space-y-2">
-              <Label htmlFor={`${nameId}-photo`}>Photo</Label>
-              <label
-                htmlFor={`${nameId}-photo`}
-                className="flex aspect-square cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-input bg-muted/30 text-center text-xs text-muted-foreground transition-colors hover:border-primary"
-              >
-                {pet.photo ? (
-                  <img src={pet.photo} alt="Pet preview" className="h-full w-full object-cover" />
-                ) : (
-                  <>
-                    <ImagePlus className="mb-2 h-6 w-6" />
-                    Upload
-                  </>
-                )}
-              </label>
-              <Input id={`${nameId}-photo`} type="file" accept="image/*" onChange={handlePhotoChange} className="sr-only" />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor={nameId}>Pet Name</Label>
-                <Input id={nameId} value={pet.name} onChange={(event) => updatePet("name", event.target.value)} placeholder="e.g., Max" required />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor={speciesId}>Species</Label>
-                <Select value={pet.species} onValueChange={(value) => updatePet("species", value)}>
-                  <SelectTrigger id={speciesId} className="w-full">
-                    <SelectValue placeholder="Select species" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {speciesOptions.map((species) => (
-                      <SelectItem key={species} value={species}>{species}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor={breedId}>Breed</Label>
-                <Input id={breedId} list={`${breedId}-suggestions`} value={pet.breed} onChange={(event) => updatePet("breed", event.target.value)} placeholder="Search or enter breed" />
-                <datalist id={`${breedId}-suggestions`}>
-                  {breedSuggestions.map((breed) => (
-                    <option key={breed} value={breed} />
-                  ))}
-                </datalist>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor={`${nameId}-gender`}>Gender</Label>
-                <Select value={pet.gender} onValueChange={(value) => updatePet("gender", value)}>
-                  <SelectTrigger id={`${nameId}-gender`} className="w-full">
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {genderOptions.map((gender) => (
-                      <SelectItem key={gender} value={gender}>{gender}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+      <ModalContent>
+        {/* Scrollable inner — only vertical, no horizontal */}
+        <div className="max-h-[90vh] overflow-y-auto overflow-x-hidden p-6">
+          <div className="flex flex-col gap-2 text-center sm:text-left mb-5">
+            <ModalPrimitive.Title className="text-lg leading-none font-semibold">Add New Pet</ModalPrimitive.Title>
+            <ModalPrimitive.Description className="text-muted-foreground text-sm">
+              Enter your pet&apos;s profile details and identification information.
+            </ModalPrimitive.Description>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor={`${nameId}-birthdate`}>Birthdate</Label>
-              <Input id={`${nameId}-birthdate`} type="date" value={pet.birthDate} onChange={(event) => updatePet("birthDate", event.target.value)} required />
-              <p className="text-xs text-muted-foreground">Age: {age}</p>
-            </div>
+          <form className="space-y-5" onSubmit={handleSubmit}>
+            {/* Photo + core fields */}
+            <div className="grid gap-4 sm:grid-cols-[7rem_1fr]">
+              <div className="space-y-2">
+                <Label htmlFor={`${nameId}-photo`}>Photo</Label>
+                <label
+                  htmlFor={`${nameId}-photo`}
+                  className="flex aspect-square cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-input bg-muted/30 text-center text-xs text-muted-foreground transition-colors hover:border-primary"
+                >
+                  {pet.photo ? (
+                    <img src={pet.photo} alt="Pet preview" className="h-full w-full object-cover" />
+                  ) : (
+                    <>
+                      <ImagePlus className="mb-2 h-6 w-6" />
+                      Upload
+                    </>
+                  )}
+                </label>
+                <Input id={`${nameId}-photo`} type="file" accept="image/*" onChange={handlePhotoChange} className="sr-only" />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor={`${nameId}-weight`}>Weight</Label>
-              <div className="flex gap-2">
-                <Input id={`${nameId}-weight`} type="number" min="0" step="0.1" value={pet.weight} onChange={(event) => updatePet("weight", event.target.value)} placeholder="0.0" required />
-                <div className="grid grid-cols-2 rounded-md border border-input p-0.5">
-                  {["kg", "lbs"].map((unit) => (
-                    <button
-                      key={unit}
-                      type="button"
-                      onClick={() => updatePet("weightUnit", unit)}
-                      className={cn("rounded px-3 text-sm font-medium transition-colors", pet.weightUnit === unit ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
-                    >
-                      {unit}
-                    </button>
-                  ))}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor={nameId}>Pet Name</Label>
+                  <Input
+                    id={nameId}
+                    value={pet.name}
+                    onChange={(e) => updatePet("name", e.target.value)}
+                    placeholder="e.g., Max"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor={speciesId}>Species</Label>
+                  <Select value={pet.species} onValueChange={(v) => updatePet("species", v)}>
+                    <SelectTrigger id={speciesId} className="w-full">
+                      <SelectValue placeholder="Select species" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {speciesOptions.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor={breedId}>Breed</Label>
+                  <Input
+                    id={breedId}
+                    list={`${breedId}-suggestions`}
+                    value={pet.breed}
+                    onChange={(e) => updatePet("breed", e.target.value)}
+                    placeholder="Search or enter breed"
+                  />
+                  <datalist id={`${breedId}-suggestions`}>
+                    {breedSuggestions.map((b) => <option key={b} value={b} />)}
+                  </datalist>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor={`${nameId}-gender`}>Gender</Label>
+                  <Select value={pet.gender} onValueChange={(v) => updatePet("gender", v)}>
+                    <SelectTrigger id={`${nameId}-gender`} className="w-full">
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {genderOptions.map((g) => (
+                        <SelectItem key={g} value={g}>{g}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor={`${nameId}-microchip`}>Microchip Number / Barcode</Label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Barcode className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input id={`${nameId}-microchip`} value={pet.microchipNumber} onChange={(event) => updatePet("microchipNumber", event.target.value)} placeholder="Enter or scan microchip number" className="pl-9" />
+            {/* Birthdate + Weight */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor={`${nameId}-birthdate`}>Birthdate</Label>
+                <Input
+                  id={`${nameId}-birthdate`}
+                  type="date"
+                  value={pet.birthDate}
+                  onChange={(e) => updatePet("birthDate", e.target.value)}
+                  required
+                />
+                <p className="text-xs text-muted-foreground">Age: {age}</p>
               </div>
-              <Button type="button" variant="default" className="px-3" title="Barcode scanning placeholder">
-                <Camera className="h-4 w-4" />
-                Scan
-              </Button>
+
+              <div className="space-y-2">
+                <Label htmlFor={`${nameId}-weight`}>Weight</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id={`${nameId}-weight`}
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={pet.weight}
+                    onChange={(e) => updatePet("weight", e.target.value)}
+                    placeholder="0.0"
+                    required
+                  />
+                  <div className="grid grid-cols-2 rounded-md border border-input p-0.5 shrink-0">
+                    {["kg", "lbs"].map((unit) => (
+                      <button
+                        key={unit}
+                        type="button"
+                        onClick={() => updatePet("weightUnit", unit)}
+                        className={cn(
+                          "rounded px-3 text-sm font-medium transition-colors",
+                          pet.weightUnit === unit
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {unit}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor={`${nameId}-marks`}>Distinguishing Marks</Label>
-            <Textarea id={`${nameId}-marks`} value={pet.distinguishingMarks} onChange={(event) => updatePet("distinguishingMarks", event.target.value)} placeholder='e.g., "White patch on left ear"' />
-          </div>
+            {/* Neutered — Yes / No toggle */}
+            <div className="space-y-2">
+              <Label>Neutered / Spayed</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {[true, false].map((val) => (
+                  <button
+                    key={String(val)}
+                    type="button"
+                    onClick={() => updatePet("neutered", val)}
+                    className={cn(
+                      "flex items-center justify-center gap-2 h-9 rounded-md border text-sm font-medium transition-colors",
+                      pet.neutered === val
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "border-input bg-transparent text-muted-foreground hover:text-foreground hover:bg-accent"
+                    )}
+                  >
+                    {pet.neutered === val && <CheckIcon className="h-3.5 w-3.5" />}
+                    {val ? "Yes" : "No"}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          <Button className="w-full" type="submit">Create Pet Profile</Button>
-        </form>
+            {/* Microchip */}
+            <div className="space-y-2">
+              <Label htmlFor={`${nameId}-microchip`}>Microchip Number</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1 min-w-0">
+                  <Barcode className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id={`${nameId}-microchip`}
+                    value={pet.microchipNumber}
+                    onChange={(e) => updatePet("microchipNumber", e.target.value)}
+                    placeholder="Enter or scan microchip number"
+                    className="pl-9"
+                  />
+                </div>
+                <Button type="button" variant="default" className="px-3 shrink-0" title="Barcode scanning placeholder">
+                  <Camera className="h-4 w-4" />
+                  Scan
+                </Button>
+              </div>
+            </div>
+
+            {/* Distinguishing Marks */}
+            <div className="space-y-2">
+              <Label htmlFor={`${nameId}-marks`}>Distinguishing Marks</Label>
+              <Textarea
+                id={`${nameId}-marks`}
+                value={pet.distinguishingMarks}
+                onChange={(e) => updatePet("distinguishingMarks", e.target.value)}
+                placeholder='e.g., "White patch on left ear"'
+              />
+            </div>
+
+            <Button className="w-full" type="submit">Create Pet Profile</Button>
+          </form>
+        </div>
       </ModalContent>
     </ModalPrimitive.Root>
   );
